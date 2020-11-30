@@ -1,0 +1,23 @@
+class Solution {
+    public int[] productExceptSelf(int[] nums) {
+        int[] ans = new int[nums.length];
+        
+        int i = 0; 
+        int lastProd = 1;
+        while(i < nums.length){
+            ans[i] = lastProd;
+            lastProd *= nums[i];
+            i++;
+        }
+        
+        int j = nums.length - 1;
+        int rightProd = 1;
+        while(j >= 0){ 
+            ans[j] *= rightProd;
+            rightProd *= nums[j];
+            j--;
+        }
+        
+        return ans;
+    }
+}
