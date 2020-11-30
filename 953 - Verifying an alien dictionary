@@ -1,0 +1,41 @@
+class Solution {
+    public boolean isAlienSorted(String[] words, String order) {
+        // Build map
+        int[] map = new int[26];
+        for(int i = 0; i < 26; i++){
+            map[order.charAt(i) - 'a'] = i;
+        }
+        
+        // Compare all words
+        for(int i = 1; i < words.length; i++){
+            
+            String w1 = words[i-1];
+            String w2 = words[i];
+            
+            if(!isSorted(w1, w2, map)){
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public boolean isSorted (String w1, String w2, int[] map) {
+        int min = Math.min(w1.length(), w2.length());
+            int j;
+            
+        for(j = 0; j < min; j++){
+            if (map[w1.charAt(j) - 'a'] > map[w2.charAt(j) - 'a']) {
+                return false;
+            } else if (map[w1.charAt(j) - 'a'] < map[w2.charAt(j) - 'a']) {
+                break;
+            }
+        }
+
+        if(j == min && w1.length() > w2.length()) {
+            return false;
+        }
+        
+        return true;
+    }
+}
