@@ -1,0 +1,45 @@
+import java.math.BigInteger;
+class Solution {
+    public String addBinary(String a, String b) {
+        int l1 = a.length() - 1;
+        int l2 = b.length() - 1;
+        int carry = 0;
+        StringBuilder ans = new StringBuilder();
+        
+        while(l1 >= 0 || l2 >= 0) {
+            int sum = carry;
+            
+            if (l1 >= 0) {
+                sum += a.charAt(l1) - '0';
+            }
+            if (l2 >= 0) {
+                sum += b.charAt(l2) - '0';
+            }
+            
+            ans.append(sum % 2);
+            carry = sum / 2;
+            l1--;
+            l2--;
+        }
+        
+        if(carry != 0) {
+            ans.append(carry);
+        }
+        
+        return ans.reverse().toString();
+        
+       /*
+        // Using bit manipulation
+        int x =  Integer.parseInt(a, 2); // 11 -> 3; 10 -> 2
+        int y =  Integer.parseInt(b, 2);
+        int carry, answer;
+        while(y != 0){
+            answer = x ^ y;
+            carry = (x & y) << 1;
+            x = answer;
+            y = carry;
+        }
+        return Integer.toString(x,2);
+        */
+    }
+}
