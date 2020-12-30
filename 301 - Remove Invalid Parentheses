@@ -1,0 +1,54 @@
+public class Solution {
+   public List<String> removeInvalidParentheses(String s) {
+        Set<String> set = new HashSet<>();
+        
+        int[] count = new int[2];
+        count = findCount(s);
+        
+        helper(s, set, count[0], count[1], 0, 0, new StringBuilder());
+        return new ArrayList<>(set);
+    }
+    
+    private void helper(String s, Set<String> set, int leftCount, int rightCount, int openCount, int index, StringBuilder sb) {
+        if (index == s.length() && leftCount == 0 && rightCount == 0 && openCount == 0) {
+            set.add(sb.toString());
+            return;
+        }
+        
+        if (index == s.length() || leftCount < 0 || rightCount < 0 || openCount < 0) {
+            return;
+        }
+        
+        char chr = s.charAt(index);
+        int len = sb.length();
+        if (chr == '(') {
+            helper(s, set, leftCount - 1, rightCount, openCount, index + 1, sb);
+            helper(s, set, leftCount, rightCount, openCount + 1, index + 1, sb.append(chr));
+        } else if (chr == ')') {
+            helper(s, set, leftCount, rightCount - 1, openCount, index + 1, sb);
+            helper(s, set, leftCount, rightCount, openCount - 1, index + 1, sb.append(chr));
+        } else {
+            helper(s, set, leftCount, rightCount, openCount, index + 1, sb.append(chr));
+        }
+        sb.deleteCharAt(len);
+    }
+    
+    public int[] findCount(String s){
+        int leftCount = 0;
+        int rightCount = 0;
+         for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                leftCount++;
+            }
+            
+            if (s.charAt(i) == ')') {
+                if (leftCount == 0) {
+                    rightCount++;
+                } else {
+                    leftCount--;
+                }
+            }
+        }
+        return new int[]{leftCount, rightCount};
+    }
+}
