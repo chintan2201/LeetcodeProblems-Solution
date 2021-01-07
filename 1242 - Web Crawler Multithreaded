@@ -1,0 +1,104 @@
+// Approach 1: Fast , high space complexity
+
+class Solution {
+    public List<String> crawl(String startUrl, HtmlParser htmlParser) {
+
+        // find hostname
+        int index = startUrl.indexOf('/', 7);
+        String hostname = (index != -1) ? startUrl.substring(0, index) : startUrl;
+
+        // multi-thread
+        Crawler crawler = new Crawler(startUrl, hostname, htmlParser);
+        //crawler.map = new ConcurrentHashMap<>(); // reset result as static property belongs to class, it will go through all of the test cases
+        // crawler.result = crawler.map.newKeySet();
+        crawler.result = ConcurrentHashMap.newKeySet();
+        Thread thread = new Thread(crawler);
+        thread.start();
+
+        crawler.joinThread(thread); // wait for thread to complete
+        return new ArrayList<>(crawler.result);
+    }
+}
+
+class Crawler implements Runnable {
+    String startUrl;
+    String hostname;
+    HtmlParser htmlParser;
+    
+    //In Java 8, you can get a concurrent hash set view via ConcurrentHashMap.newKeySet()
+    public static Set<String> result = ConcurrentHashMap.newKeySet();
+
+    public Crawler(String startUrl, String hostname, HtmlParser htmlParser) {
+        this.startUrl = startUrl;
+        this.hostname = hostname;
+        this.htmlParser = htmlParser;
+    }
+
+    @Override
+    public void run() {
+        if (this.startUrl.startsWith(hostname) && !this.result.contains(this.startUrl)) {
+            this.result.add(this.startUrl);
+            List<Thread> threads = new ArrayList<>();
+            for (String s : htmlParser.getUrls(startUrl)) {
+			    if(result.contains(s)) continue;
+                Crawler crawler = new Crawler(s, hostname, htmlParser);
+                Thread thread = new Thread(crawler);
+                thread.start();
+                threads.add(thread);
+            }
+            for (Thread t : threads) {
+                //One thread may call join( ) on another thread to wait for the second thread to complete before proceeding. 
+                joinThread(t); // wait for all threads to complete
+            }
+        }
+    }
+
+    public static void joinThread(Thread thread) {
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+// Approach 2: Slow but less space complexity
+
+/**
+ * // This is the HtmlParser's API interface.
+ * // You should not implement it, or speculate about its implementation
+ * interface HtmlParser {
+ *     public List<String> getUrls(String url) {}
+ * }
+ */
+class Solution {
+    
+    Set<String> vs = new ConcurrentHashMap<>().newKeySet();
+    public List<String> crawl(String startUrl, HtmlParser htmlParser) {
+        // Set for completed URL
+        // Get hostname
+        // get all urls of start url 
+        // find all the URLs which has same hostname
+        // add current start url to set
+        // Repeat this process for all URLs
+        
+        String host = getHost(startUrl);
+        vs.add(startUrl);
+        return crawlTemp(startUrl, htmlParser, host).collect(Collectors.toList());
+        
+    }
+    
+    private Stream<String> crawlTemp(String startUrl, HtmlParser htmlParser, String host) {
+        Stream<String> c = htmlParser.getUrls(startUrl)
+            .parallelStream()
+            .filter(x -> getHost(x).equals(host))
+            .filter(x -> vs.add(x))
+            .flatMap(x -> crawlTemp(x, htmlParser, host));
+        
+        return Stream.concat(Stream.of(startUrl),c);
+    }
+    
+    private String getHost(String url) {
+        return url.split("/")[2];
+    }
+}
